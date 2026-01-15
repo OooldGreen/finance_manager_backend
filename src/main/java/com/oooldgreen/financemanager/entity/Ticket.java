@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,11 +26,12 @@ public class Ticket {
     @Column(name = "ticket_completion_date")
     private LocalDateTime ticketCompletionDate;
 
-    @Column(length = 20)
-    private String ticketType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ticket_type", length = 10, nullable = false)
+    private TicketType ticketType;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
+    @Column(name = "ticket_status", length = 10)
     private TicketStatus ticketStatus;
 
     @Column(name = "created_at", nullable = false, updatable = false)
