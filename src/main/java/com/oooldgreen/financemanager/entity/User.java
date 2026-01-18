@@ -3,6 +3,7 @@ package com.oooldgreen.financemanager.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,7 +27,7 @@ public class User {
     private String lastName;
 
     @Column(name = "date_of_birth")
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

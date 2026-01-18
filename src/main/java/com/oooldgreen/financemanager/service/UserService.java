@@ -18,6 +18,11 @@ public class UserService {
 
     @Transactional
     public User createUser(User user) {
+        // verify username
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists. Please choose another one.");
+        }
+
         User savedUser = userRepository.save(user);
 
         TotalBalance total = new TotalBalance();
