@@ -8,8 +8,10 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.PasswordAuthentication;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final JwtService jwtService;
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
     @PostMapping
@@ -30,20 +33,27 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         return userRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUserById(@PathVariable Long id, @RequestBody User user) {
+        User updatedUser = userService.updateUser(id, user);
+        return ResponseEntity.ok(updatedUser);
+    }
+
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestBody User loginUser) {
         Optional<User> user = userRepository.findByUsername(loginUser.getUsername());
-        if (user.isPresent() && user.get().getPassword().equals(loginUser.getPassword())) {
+        boolean isMatch = false;
+
+        if (user.isPresent()) {
+            isMatch = passwordEncoder.matches(user.get().getPassword(), loginUser.getPassword());
+        }
+
+        if (isMatch) {
             String token = jwtService.generateToken(user.get().getUsername());
 
             Map<String, Object> response = new HashMap<>();
