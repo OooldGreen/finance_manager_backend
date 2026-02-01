@@ -1,5 +1,6 @@
 package com.oooldgreen.financemanager.controller;
 
+import com.oooldgreen.financemanager.dto.PasswordUpdateDTO;
 import com.oooldgreen.financemanager.entity.User;
 import com.oooldgreen.financemanager.repository.UserRepository;
 import com.oooldgreen.financemanager.service.JwtService;
@@ -24,7 +25,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final JwtService jwtService;
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @PostMapping
@@ -38,10 +39,18 @@ public class UserController {
         return userRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUserById(@PathVariable Long id, @RequestBody User user) {
-        User updatedUser = userService.updateUser(id, user);
+    @PatchMapping("/me")
+    public ResponseEntity<User> updateUserById(@RequestBody User user) {
+        User currentUser = userService.getCurrentAuthUser();
+        User updatedUser = userService.updateUser(currentUser.getId(), user);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PatchMapping("/me/password")
+    public  ResponseEntity<?> updatePassword(@RequestBody PasswordUpdateDTO passwordUpdateDTO) {
+        User currentUser = userService.getCurrentAuthUser();
+        userService.updatePassword(currentUser, passwordUpdateDTO);
+        return ResponseEntity.ok("success");
     }
 
     @PostMapping("/signin")
@@ -50,7 +59,7 @@ public class UserController {
         boolean isMatch = false;
 
         if (user.isPresent()) {
-            isMatch = passwordEncoder.matches(user.get().getPassword(), loginUser.getPassword());
+            isMatch = passwordEncoder.matches(loginUser.getPassword(), user.get().getPassword());
         }
 
         if (isMatch) {
