@@ -77,6 +77,7 @@ public class UserService implements UserDetailsService {
         return userRepository.save(currentUser);
     }
 
+    @Transactional
     public void updatePassword(User user, PasswordUpdateDTO request) {
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new RuntimeException("Current password is wrong, please try again");
@@ -88,6 +89,12 @@ public class UserService implements UserDetailsService {
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        totalBalanceRepository.deleteByUserId(userId);
+        userRepository.deleteById(userId);
     }
 
     public User getCurrentAuthUser() {

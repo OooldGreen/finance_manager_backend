@@ -34,8 +34,9 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+    @GetMapping("/me")
+    public ResponseEntity<User> getUserById() {
+        Long id = userService.getCurrentAuthUser().getId();
         return userRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
@@ -51,6 +52,13 @@ public class UserController {
         User currentUser = userService.getCurrentAuthUser();
         userService.updatePassword(currentUser, passwordUpdateDTO);
         return ResponseEntity.ok("success");
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteUser() {
+        Long userId = userService.getCurrentAuthUser().getId();
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/signin")
