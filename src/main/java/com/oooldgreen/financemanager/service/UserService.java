@@ -70,7 +70,7 @@ public class UserService implements UserDetailsService {
             currentUser.setLastName(user.getLastName());
         }
 
-        if (user.getDateOfBirth() != null && !user.getDateOfBirth().isBefore(LocalDate.now())) {
+        if (user.getDateOfBirth() != null && user.getDateOfBirth().isBefore(LocalDate.now())) {
             currentUser.setDateOfBirth(user.getDateOfBirth());
         }
 
@@ -116,6 +116,17 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
+        return buildUserDetails(user);
+    }
+
+    public UserDetails loadUserByUserId(Long id) throws UsernameNotFoundException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return buildUserDetails(user);
+    }
+
+    private UserDetails buildUserDetails(User user) {
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())

@@ -71,7 +71,7 @@ public class UserController {
         }
 
         if (isMatch) {
-            String token = jwtService.generateToken(user.get().getUsername());
+            String token = jwtService.generateToken(user.get().getId());
 
             Map<String, Object> response = new HashMap<>();
             response.put("id", user.get().getId());
