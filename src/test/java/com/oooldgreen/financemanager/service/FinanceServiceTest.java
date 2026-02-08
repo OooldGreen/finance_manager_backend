@@ -1,8 +1,8 @@
 package com.oooldgreen.financemanager.service;
 
 import com.oooldgreen.financemanager.entity.*;
-import com.oooldgreen.financemanager.repository.BalanceModeRepository;
-import com.oooldgreen.financemanager.repository.TotalBalanceRepository;
+import com.oooldgreen.financemanager.entity.Transaction;
+import com.oooldgreen.financemanager.repository.AccountRepository;
 import com.oooldgreen.financemanager.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ class FinanceServiceTest {
     private UserRepository userRepository;
 
     @Autowired
-    private BalanceModeRepository balanceModeRepository;
+    private AccountRepository accountRepository;
 
     @Autowired
     private TotalBalanceRepository totalBalanceRepository;
@@ -42,22 +42,22 @@ class FinanceServiceTest {
         total.setUser(user);
         total = totalBalanceRepository.save(total);
 
-        BalanceMode mode = new BalanceMode();
+        Account mode = new Account();
         mode.setName("Cash");
         mode.setBalance(new BigDecimal("1000.00"));
         mode.setTotalBalance(total);
-        mode = balanceModeRepository.save(mode);
+        mode = accountRepository.save(mode);
 
-        Ticket ticket = new Ticket();
-        ticket.setTitle("shopping");
-        ticket.setAmount(new BigDecimal("220.00"));
-        ticket.setTicketType(TicketType.EXPENSE);
-        ticket.setUser(user);
-        ticket.setBalanceMode(mode);
+        Transaction transaction = new Transaction();
+        transaction.setTitle("shopping");
+        transaction.setAmount(new BigDecimal("220.00"));
+        transaction.setTransactionType(TransactionType.EXPENSE);
+        transaction.setUser(user);
+        transaction.setAccount(mode);
 
-        financeService.addTicket(ticket);
+        financeService.addRecord(transaction);
 
-        BalanceMode updatedMode = balanceModeRepository.findById(mode.getId()).orElseThrow();
+        Account updatedMode = accountRepository.findById(mode.getId()).orElseThrow();
         TotalBalance updatedTotal = totalBalanceRepository.findById(total.getId()).orElseThrow();
 
         assertThat(updatedTotal.getTotalAmount()).isEqualTo("780.00");

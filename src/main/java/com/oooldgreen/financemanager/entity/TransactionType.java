@@ -1,6 +1,6 @@
 package com.oooldgreen.financemanager.entity;
 
-public enum TicketType {
+public enum TransactionType {
     EXPENSE,
     INCOME
 }

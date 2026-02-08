@@ -1,15 +1,12 @@
 package com.oooldgreen.financemanager.service;
 
-import com.oooldgreen.financemanager.entity.BalanceMode;
-import com.oooldgreen.financemanager.entity.Ticket;
-import com.oooldgreen.financemanager.entity.TicketType;
-import com.oooldgreen.financemanager.entity.TotalBalance;
-import com.oooldgreen.financemanager.repository.BalanceModeRepository;
-import com.oooldgreen.financemanager.repository.TicketRepository;
-import com.oooldgreen.financemanager.repository.TotalBalanceRepository;
+import com.oooldgreen.financemanager.entity.Account;
+import com.oooldgreen.financemanager.entity.Transaction;
+import com.oooldgreen.financemanager.entity.TransactionType;
+import com.oooldgreen.financemanager.repository.AccountRepository;
+import com.oooldgreen.financemanager.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,49 +14,37 @@ import java.math.BigDecimal;
 @Service
 @RequiredArgsConstructor
 public class FinanceService {
-    private final TicketRepository ticketRepository;
-    private final BalanceModeRepository balanceModeRepository;
-    private final TotalBalanceRepository totalBalanceRepository;
+    private final TransactionRepository transactionRepository;
+    private final AccountRepository accountRepository;
 
     @Transactional
-    public Ticket addTicket(Ticket ticket) {
-        Ticket savedTicket = ticketRepository.save(ticket);
+    public Transaction addRecord(Transaction transaction) {
+        Transaction savedTransaction = transactionRepository.save(transaction);
 
-        BalanceMode mode = balanceModeRepository.findById(ticket.getBalanceMode().getId()).orElseThrow(() -> new RuntimeException("Can't find account"));
-        TotalBalance total = totalBalanceRepository.findByUserId(ticket.getUser().getId()).orElseThrow(() ->  new RuntimeException("Can't find total account"));
-
-        BigDecimal amount = ticket.getAmount();
+        Account account = accountRepository.findById(transaction.getAccount().getId()).orElseThrow(() -> new RuntimeException("Can't find account"));
+        BigDecimal amount = transaction.getAmount();
 
         // update balance of account
-        if (ticket.getTicketType().equals(TicketType.EXPENSE)) {
-            mode.setBalance(mode.getBalance().subtract(amount));
-            total.setTotalAmount(total.getTotalAmount().subtract(amount));
-        } else if (ticket.getTicketType().equals((TicketType.INCOME))) {
-            mode.setBalance(mode.getBalance().add(amount));
-            total.setTotalAmount(total.getTotalAmount().add(amount));
+        if (transaction.getTransactionType().equals(TransactionType.EXPENSE)) {
+            account.setBalance(account.getBalance().subtract(amount));
+        } else if (transaction.getTransactionType().equals((TransactionType.INCOME))) {
+            account.setBalance(account.getBalance().add(amount));
         }
-        balanceModeRepository.save(mode);
-        totalBalanceRepository.save(total);
+        accountRepository.save(account);
 
-        return savedTicket;
+        return savedTransaction;
     }
 
     @Transactional
-    public BalanceMode createBalanceMode(BalanceMode mode) {
-        if (mode.getBalance() == null) {
-            mode.setBalance(BigDecimal.ZERO);
-        }
-        BalanceMode savedMode = balanceModeRepository.save(mode);
-        TotalBalance updateBalance = savedMode.getTotalBalance();
-
-        if (updateBalance == null ) {
-            // find total balance by user id
-            updateBalance = totalBalanceRepository.findByUserId(savedMode.getUser().getId()).orElseThrow(() -> new RuntimeException("Can't find user"));
+    public Account createAccount(Account account) {
+        if (account.getBalance() == null) {
+            account.setBalance(BigDecimal.ZERO);
         }
 
-        updateBalance.setTotalAmount(updateBalance.getTotalAmount().add(savedMode.getBalance()));
-        totalBalanceRepository.save(updateBalance);
+        if (account.getCurrency() == null) {
+            account.setCurrency("EUR");
+        }
 
-        return savedMode;
+        return accountRepository.save(account);
     }
 }

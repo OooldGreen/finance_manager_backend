@@ -1,0 +1,16 @@
+# MacOS用户用下方这条命令，注意替换你的端口号
+# ProxyCommand nc -v -x 127.0.0.1:7890 %h %p
+Host *.kd.io
+    User OooldGreen
+    ProxyCommand ssh OooldGreen@ssh.koding.com nc %h %p
+
+Host ssh.github.com
+  User git
+  Port 443
+  Hostname ssh.github.com
+  # 注意修改路径为你的路径
+  IdentityFile ~/.ssh/id_rsa
+  TCPKeepAlive yes
+
+Host github.com
+KexAlgorithms=ecdh-sha2-nistp521

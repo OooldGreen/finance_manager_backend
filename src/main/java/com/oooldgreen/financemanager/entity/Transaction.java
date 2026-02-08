@@ -7,24 +7,32 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "balance_modes")
+@Table(name = "transaction")
 @Data
-public class BalanceMode {
+public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", length = 50, nullable = false)
-    private String name;
+    @Column(nullable = false)
+    private String title;
 
     @Column(nullable = false)
-    private BigDecimal balance;
+    private BigDecimal amount;
 
-    @Column(length = 10)
-    private String currency;
+    @Column
+    private String description;
 
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    @Column(name = "transaction_completion_date")
+    private LocalDateTime ticketCompletionDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_type", length = 10, nullable = false)
+    private TransactionType transactionType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "transaction_status", length = 10)
+    private TransactionStatus transactionStatus;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -33,12 +41,12 @@ public class BalanceMode {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "total_balance_id")
-    private TotalBalance totalBalance;
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @PrePersist
     protected void onCreate() {

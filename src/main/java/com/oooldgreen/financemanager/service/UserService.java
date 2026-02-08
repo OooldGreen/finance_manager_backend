@@ -1,9 +1,9 @@
 package com.oooldgreen.financemanager.service;
 
 import com.oooldgreen.financemanager.dto.PasswordUpdateDTO;
-import com.oooldgreen.financemanager.entity.TotalBalance;
+import com.oooldgreen.financemanager.entity.Account;
 import com.oooldgreen.financemanager.entity.User;
-import com.oooldgreen.financemanager.repository.TotalBalanceRepository;
+import com.oooldgreen.financemanager.repository.AccountRepository;
 import com.oooldgreen.financemanager.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +23,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-    private final TotalBalanceRepository totalBalanceRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AccountRepository accountRepository;
 
     @Transactional
     public User createUser(User user) {
@@ -41,10 +41,12 @@ public class UserService implements UserDetailsService {
         user.setPassword(encodedPassword);
         User savedUser = userRepository.save(user);
 
-        TotalBalance total = new TotalBalance();
-        total.setUser(savedUser);
-        total.setTotalAmount(BigDecimal.ZERO);
-        totalBalanceRepository.save(total);
+        Account defaultAccount = new Account();
+        defaultAccount.setName("default wallet");
+        defaultAccount.setBalance(BigDecimal.ZERO);
+        defaultAccount.setCurrency("EUR");
+        defaultAccount.setUser(savedUser);
+        accountRepository.save(defaultAccount);
 
         return savedUser;
     }
@@ -93,7 +95,6 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void deleteUser(Long userId) {
-        totalBalanceRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
     }
 

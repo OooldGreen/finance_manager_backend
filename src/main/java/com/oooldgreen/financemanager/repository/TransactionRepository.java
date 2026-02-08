@@ -1,12 +1,11 @@
 package com.oooldgreen.financemanager.repository;
 
-import com.oooldgreen.financemanager.entity.Ticket;
+import com.oooldgreen.financemanager.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface TicketRepository extends JpaRepository<Ticket, Long> {
-    List<Ticket> findByUserId(Long userId);
+public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 }

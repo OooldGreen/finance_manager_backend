@@ -1,8 +1,6 @@
 package com.oooldgreen.financemanager.controller;
 
-import com.oooldgreen.financemanager.entity.TotalBalance;
 import com.oooldgreen.financemanager.entity.User;
-import com.oooldgreen.financemanager.repository.TotalBalanceRepository;
 import com.oooldgreen.financemanager.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;

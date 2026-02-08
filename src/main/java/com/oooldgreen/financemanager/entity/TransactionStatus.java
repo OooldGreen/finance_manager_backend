@@ -1,6 +1,6 @@
 package com.oooldgreen.financemanager.entity;
 
-public enum TicketStatus {
+public enum TransactionStatus {
     PENDING,
     COMPLETED,
     CANCELLED
