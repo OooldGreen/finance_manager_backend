@@ -31,6 +31,9 @@ public class Account {
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @Column(name = "remark")
+    private String remark = "";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

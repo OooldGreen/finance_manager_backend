@@ -54,7 +54,6 @@ public class SecurityConfig {
                     ).permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/api/users", "/api/users/signup", "/api/users/signin").permitAll()
-                    .requestMatchers("/api/users/**").authenticated()
                     .anyRequest().authenticated()
             )
             // Set custom authentication provider
