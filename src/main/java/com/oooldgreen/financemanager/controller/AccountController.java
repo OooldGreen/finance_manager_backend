@@ -32,7 +32,6 @@ public class AccountController {
     @GetMapping("/total_balance")
     public ResponseEntity<TotalBalanceDTO> getTotalBalance() {
         Long userId = userService.getCurrentAuthUser().getId();
-
         return ResponseEntity.ok(accountService.getTotalBalanceByUserId(userId));
     }
 
@@ -43,7 +42,7 @@ public class AccountController {
                 .toList();
     }
 
-    @PostMapping("/create-account")
+    @PostMapping
     public ResponseEntity<?> createAccount(@RequestBody Account accountData) throws IllegalAccessException {
         Account newAccount = accountService.createAccount(accountData);
         return ResponseEntity.status(HttpStatus.CREATED).body(newAccount);

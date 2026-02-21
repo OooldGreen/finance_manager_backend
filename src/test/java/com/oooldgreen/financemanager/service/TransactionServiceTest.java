@@ -16,9 +16,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class FinanceServiceTest {
+class TransactionServiceTest {
     @Autowired
-    private FinanceService financeService;
+    private TransactionService transactionService;
 
     @Autowired
     private UserRepository userRepository;
@@ -55,7 +55,7 @@ class FinanceServiceTest {
         transaction.setUser(user);
         transaction.setAccount(mode);
 
-        financeService.addRecord(transaction);
+        transactionService.addRecord(transaction);
 
         Account updatedMode = accountRepository.findById(mode.getId()).orElseThrow();
         TotalBalance updatedTotal = totalBalanceRepository.findById(total.getId()).orElseThrow();
