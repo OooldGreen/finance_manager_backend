@@ -52,10 +52,9 @@ public class TransactionService {
     }
 
     @Transactional
-    public Map<String, BigDecimal> getMonthTotalBalance(Long userId) {
+    public Map<String, BigDecimal> getMonthTotalBalance(Integer year, Integer month) {
         User user = userService.getCurrentAuthUser();
-        LocalDate now = LocalDate.now();
-        List<Transaction> transactions = transactionRepository.getMonthlyTransactions(now.getYear(), now.getMonthValue(), user);
+        List<Transaction> transactions = transactionRepository.getMonthlyTransactions(year, month, user);
         BigDecimal expense = transactions.stream()
                 .filter(t -> t.getTransactionType() == TransactionType.EXPENSE)
                 .map(Transaction::getAmount)
@@ -79,6 +78,13 @@ public class TransactionService {
             throw new AccessDeniedException("Access denied! You can not delete this record.");
         }
         return transactionMapper.toDTO(transaction);
+    }
+
+    @Transactional
+    public List<TransactionDTO> getTransactionsByAccount(Long accountId) {
+        User user = userService.getCurrentAuthUser();
+        List<Transaction> transactions = transactionRepository.getTransactionsByAccount(user, accountId);
+        return transactions.stream().map(transactionMapper::toDTO).toList();
     }
 
     @Transactional

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -53,9 +54,13 @@ public class TransactionController {
     }
 
     @GetMapping("/month-balance")
-    public ResponseEntity<Map<String, BigDecimal>> getTotalMonthBalance() {
-        Long userId = userService.getCurrentAuthUser().getId();
-        return ResponseEntity.ok(transactionService.getMonthTotalBalance(userId));
+    public ResponseEntity<Map<String, BigDecimal>> getTotalMonthBalance(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month
+    ) {
+        int targetYear = (year != null) ? year : LocalDate.now().getYear();
+        int targetMonth = (month != null) ? month : LocalDate.now().getMonthValue();
+        return ResponseEntity.ok(transactionService.getMonthTotalBalance(targetYear, targetMonth));
     }
 
     @GetMapping("/{id}")

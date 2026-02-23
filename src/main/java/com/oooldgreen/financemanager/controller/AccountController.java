@@ -1,10 +1,13 @@
 package com.oooldgreen.financemanager.controller;
 
 import com.oooldgreen.financemanager.dto.TotalBalanceDTO;
+import com.oooldgreen.financemanager.dto.TransactionDTO;
 import com.oooldgreen.financemanager.entity.Account;
 import com.oooldgreen.financemanager.entity.AccountType;
+import com.oooldgreen.financemanager.entity.Transaction;
 import com.oooldgreen.financemanager.repository.AccountRepository;
 import com.oooldgreen.financemanager.service.AccountService;
+import com.oooldgreen.financemanager.service.TransactionService;
 import com.oooldgreen.financemanager.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 public class AccountController {
     private final UserService userService;
     private final AccountService accountService;
+    private final TransactionService transactionService;
 
     @GetMapping
     public ResponseEntity<List<Account>> getAllAccounts() {
@@ -51,6 +55,11 @@ public class AccountController {
     @GetMapping("/{id}")
     public ResponseEntity<Account> getAccountDetail(@PathVariable Long id) throws AccessDeniedException {
        return ResponseEntity.ok(accountService.getAccountDetail(id));
+    }
+
+    @GetMapping("/{id}/records")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccount(@PathVariable Long id) {
+        return ResponseEntity.ok(transactionService.getTransactionsByAccount(id));
     }
 
     @PatchMapping("/{id}")
