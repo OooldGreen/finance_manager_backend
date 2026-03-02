@@ -1,6 +1,7 @@
 package com.oooldgreen.financemanager.repository;
 
 import com.oooldgreen.financemanager.entity.Transaction;
+import com.oooldgreen.financemanager.entity.TransactionStatus;
 import com.oooldgreen.financemanager.entity.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -11,7 +12,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
@@ -42,4 +45,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Transactional
     @Query("SELECT t FROM Transaction t WHERE t.user = :user AND t.account.id = :accountId ORDER BY t.ticketCompletionDate DESC")
     List<Transaction> getTransactionsByAccount(User user, Long accountId);
+
+    @Query("SELECT MIN(t.ticketCompletionDate) FROM Transaction t WHERE t.user.id = :userId AND t.transactionStatus = com.oooldgreen.financemanager.entity.TransactionStatus.COMPLETED")
+    Optional<LocalDateTime > findFirstTransactionDate(Long userId);
 }
