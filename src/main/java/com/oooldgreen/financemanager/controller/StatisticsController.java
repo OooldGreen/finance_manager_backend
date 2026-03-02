@@ -2,6 +2,7 @@ package com.oooldgreen.financemanager.controller;
 
 import com.oooldgreen.financemanager.dto.StatisticsAllDTO;
 import com.oooldgreen.financemanager.dto.StatisticsDTO;
+import com.oooldgreen.financemanager.dto.StatisticsKpiDTO;
 import com.oooldgreen.financemanager.service.StatisticService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,11 @@ public class StatisticsController {
             @RequestParam(required = false) LocalDate endDate
     ){
         return ResponseEntity.ok(statisticService.getDataByCatAndType(type, startDate, endDate));
+    }
+
+    @GetMapping("/kpi")
+    private ResponseEntity<StatisticsKpiDTO> getKpiData() {
+        return ResponseEntity.ok(statisticService.getKpiData());
     }
 
 }

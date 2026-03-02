@@ -2,6 +2,7 @@ package com.oooldgreen.financemanager.service;
 
 import com.oooldgreen.financemanager.dto.StatisticsAllDTO;
 import com.oooldgreen.financemanager.dto.StatisticsDTO;
+import com.oooldgreen.financemanager.dto.StatisticsKpiDTO;
 import com.oooldgreen.financemanager.entity.TransactionStatus;
 import com.oooldgreen.financemanager.entity.TransactionType;
 import com.oooldgreen.financemanager.repository.StatisticsRepository;
@@ -16,7 +17,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,5 +73,48 @@ public class StatisticService {
         Long userId = userService.getCurrentAuthUser().getId();
         TransactionType typeEnum = TransactionType.valueOf(type);
         return statisticsRepository.getDataByCatAndType(userId, typeEnum, TransactionStatus.COMPLETED, startDate, endDate);
+    }
+
+    @Transactional
+    public StatisticsKpiDTO getKpiData() {
+        Long userId = userService.getCurrentAuthUser().getId();
+        // get date range of current month
+        LocalDateTime current = LocalDateTime.now();
+        LocalDateTime startOfCur = current.with(TemporalAdjusters.firstDayOfMonth())
+                .withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime endOfCur = current.with(TemporalAdjusters.lastDayOfMonth())
+                .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+
+        // get date range of previous month
+        LocalDateTime startOfPre = startOfCur.minusMonths(1);
+        LocalDateTime endOfPre = startOfPre.with(TemporalAdjusters.lastDayOfMonth())
+                .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+
+        List<Object[]> currentRes = statisticsRepository.getMonthlyStats(userId, TransactionStatus.COMPLETED, startOfCur, endOfCur);
+        List<Object[]> previousRes = statisticsRepository.getMonthlyStats(userId, TransactionStatus.COMPLETED, startOfPre, endOfPre);
+        Object[] currentStats = currentRes.isEmpty() ? new Object[]{0.0, 0.0, 0.0} : currentRes.get(0);
+        Object[] previousStats = previousRes.isEmpty() ? new Object[]{0.0, 0.0, 0.0} : previousRes.get(0);
+
+        System.out.println("---- debug --- ");
+        System.out.println("Warning: Array length is only " + (previousStats == null ? 0 : previousStats.length));
+        System.out.println(previousStats[0]);
+        System.out.println("current expense" + previousStats[1]);
+        System.out.println("current top" + previousStats[2]);
+
+        if (currentStats.length < 3 || currentStats[0] == null) {
+            currentStats = new Object[]{0.0, 0.0, 0.0};
+        }
+        if(previousStats.length < 3 || previousStats[0] == null) {
+            previousStats = new Object[]{0.0, 0.0, 0.0};
+        }
+
+        return new StatisticsKpiDTO(
+                currentStats[0],  // current income
+                currentStats[1],  // current expense
+                previousStats[0], // previous income
+                previousStats[1], // previous expense
+                currentStats[2],  // current top expense
+                previousStats[2]  // previous top expense
+        );
     }
 }

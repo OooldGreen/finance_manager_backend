@@ -8,6 +8,7 @@ import com.oooldgreen.financemanager.entity.TransactionType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -48,4 +49,21 @@ public interface StatisticsRepository extends JpaRepository<Transaction, Long> {
             @Param("status") TransactionStatus status,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+
+    @Query("SELECT " +
+            "SUM(CASE WHEN t.transactionType = com.oooldgreen.financemanager.entity.TransactionType.INCOME THEN t.amount ELSE 0.0 END) as totalIncome, " +
+            "SUM(CASE WHEN t.transactionType = com.oooldgreen.financemanager.entity.TransactionType.EXPENSE THEN t.amount ELSE 0.0 END) as totalExpense, " +
+            "MAX(CASE WHEN t.transactionType = com.oooldgreen.financemanager.entity.TransactionType.EXPENSE THEN ABS(t.amount) END) as topExpense " +
+            "FROM Transaction t " +
+            "WHERE t.user.id = :userId " +
+            "AND t.transactionStatus = :status " +
+            "AND t.ticketCompletionDate >= :startDate " +
+            "AND t.ticketCompletionDate <= :endDate")
+    List<Object[]> getMonthlyStats(
+            @Param("userId") Long userId,
+            @Param("status") TransactionStatus status,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }
