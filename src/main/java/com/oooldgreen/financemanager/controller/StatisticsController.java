@@ -1,5 +1,6 @@
 package com.oooldgreen.financemanager.controller;
 
+import com.oooldgreen.financemanager.dto.HeatmapProjection;
 import com.oooldgreen.financemanager.dto.StatisticsAllDTO;
 import com.oooldgreen.financemanager.dto.StatisticsDTO;
 import com.oooldgreen.financemanager.dto.StatisticsKpiDTO;
@@ -39,4 +40,8 @@ public class StatisticsController {
         return ResponseEntity.ok(statisticService.getKpiData());
     }
 
+    @GetMapping("/heatmap")
+    private ResponseEntity<List<HeatmapProjection>> getHeatmapData(int year) {
+        return ResponseEntity.ok((statisticService.getHeatmapData(year)));
+    }
 }

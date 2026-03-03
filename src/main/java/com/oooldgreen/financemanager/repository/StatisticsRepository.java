@@ -1,5 +1,6 @@
 package com.oooldgreen.financemanager.repository;
 
+import com.oooldgreen.financemanager.dto.HeatmapProjection;
 import com.oooldgreen.financemanager.dto.StatisticsAllDTO;
 import com.oooldgreen.financemanager.dto.StatisticsDTO;
 import com.oooldgreen.financemanager.entity.Transaction;
@@ -66,4 +67,16 @@ public interface StatisticsRepository extends JpaRepository<Transaction, Long> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+
+    @Query("SELECT CAST(t.ticketCompletionDate as DATE) as date, " +
+            "COUNT(t.id) as count " +
+            "FROM Transaction t " +
+            "WHERE t.user.id = :userId " +
+            "AND t.transactionStatus = :status " +
+            "AND YEAR(t.ticketCompletionDate) = :year " +
+            "GROUP BY date")
+    List<HeatmapProjection> getHeatmapData(
+            @Param("userId") Long userId,
+            @Param("status") TransactionStatus status,
+            @Param("year") int year);
 }

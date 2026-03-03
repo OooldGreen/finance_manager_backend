@@ -1,5 +1,6 @@
 package com.oooldgreen.financemanager.service;
 
+import com.oooldgreen.financemanager.dto.HeatmapProjection;
 import com.oooldgreen.financemanager.dto.StatisticsAllDTO;
 import com.oooldgreen.financemanager.dto.StatisticsDTO;
 import com.oooldgreen.financemanager.dto.StatisticsKpiDTO;
@@ -116,5 +117,11 @@ public class StatisticService {
                 currentStats[2],  // current top expense
                 previousStats[2]  // previous top expense
         );
+    }
+
+    @Transactional
+    public List<HeatmapProjection> getHeatmapData(int year) {
+        Long userId = userService.getCurrentAuthUser().getId();
+        return statisticsRepository.getHeatmapData(userId, TransactionStatus.COMPLETED, year);
     }
 }
