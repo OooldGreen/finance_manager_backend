@@ -20,4 +20,8 @@ public enum TransactionCategory {
 
     private final String group;
     TransactionCategory(String group) { this.group = group; }
+
+    public boolean isExpense () {
+        return "EXPENSE".equals(this.group) || "GENERAL".equals(this.group);
+    }
 }

@@ -96,12 +96,6 @@ public class StatisticService {
         Object[] currentStats = currentRes.isEmpty() ? new Object[]{0.0, 0.0, 0.0} : currentRes.get(0);
         Object[] previousStats = previousRes.isEmpty() ? new Object[]{0.0, 0.0, 0.0} : previousRes.get(0);
 
-        System.out.println("---- debug --- ");
-        System.out.println("Warning: Array length is only " + (previousStats == null ? 0 : previousStats.length));
-        System.out.println(previousStats[0]);
-        System.out.println("current expense" + previousStats[1]);
-        System.out.println("current top" + previousStats[2]);
-
         if (currentStats.length < 3 || currentStats[0] == null) {
             currentStats = new Object[]{0.0, 0.0, 0.0};
         }
