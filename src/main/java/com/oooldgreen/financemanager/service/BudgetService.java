@@ -1,18 +1,13 @@
 package com.oooldgreen.financemanager.service;
 
-import com.oooldgreen.financemanager.dto.BudgetCategoryDTO;
 import com.oooldgreen.financemanager.dto.BudgetDTO;
 import com.oooldgreen.financemanager.dto.BudgetUsageProjection;
-import com.oooldgreen.financemanager.dto.StatisticsDTO;
 import com.oooldgreen.financemanager.entity.*;
 import com.oooldgreen.financemanager.mapper.BudgetMapper;
 import com.oooldgreen.financemanager.repository.BudgetRepository;
-import com.oooldgreen.financemanager.repository.StatisticsRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.api.OpenApiResourceNotFoundException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,9 +19,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -17,13 +18,15 @@ public class GoalDTO {
     private Long id;
     private String title;
     private String description;
+    private String currency;
     private BigDecimal targetAmount;
     private BigDecimal currentAmount;
     private String category;
-    private boolean isPriority;
-    private boolean isActive;
+    private Boolean isPriority;
+    private Boolean isActive;
+    private LocalDate createdAt;
 
     private String status;
-    private double progress;
-    private boolean isReached;
+    private Double progress;
+    private Boolean isReached;
 }

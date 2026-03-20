@@ -10,26 +10,33 @@ import com.oooldgreen.financemanager.mapper.GoalMapper;
 import com.oooldgreen.financemanager.repository.GoalRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.nio.file.AccessDeniedException;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class GoalService {
-    private GoalRepository goalRepository;
-    private GoalMapper goalMapper;
-    private UserService userService;
+    private final GoalRepository goalRepository;
+    private final GoalMapper goalMapper;
+    private final UserService userService;
 
     @Transactional
-    public List<GoalDTO> getAllGoals() {
+    public Page<GoalDTO> getAllGoals(int page, int size) {
         Long userId = userService.getCurrentAuthUser().getId();
-        return goalRepository.findAllByUserIdOrderByIsPriorityDescIsActiveDescUpdatedAtDesc(userId)
-                .stream()
-                .map(goal -> goalMapper.toDTO(goal))
-                .toList();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(
+                Sort.Order.asc("isReached"),
+                Sort.Order.desc("isActive"),
+                Sort.Order.desc("isPriority"),
+                Sort.Order.desc("createdAt")
+        ));
+        Page<Goal> goals = goalRepository.findAllByUserId(userId, pageable);
+        return goals.map(goalMapper::toDTO);
     }
 
     @Transactional
@@ -57,12 +64,29 @@ public class GoalService {
         Goal goal = findAndVerifyGoal(goalId, user.getId());
         goal.setTitle(goalDetail.getTitle());
         goal.setDescription(goalDetail.getDescription());
+        goal.setCurrency(goalDetail.getCurrency());
         goal.setTargetAmount(goalDetail.getTargetAmount());
         goal.setCurrentAmount(goalDetail.getCurrentAmount());
         goal.setCategory(GoalCategory.valueOf(goalDetail.getCategory().toUpperCase()));
-        goal.setIsActive(goalDetail.isActive());
-        goal.setIsPriority(goalDetail.isPriority());
 
+        return goalMapper.toDTO(goalRepository.save(goal));
+    }
+
+    @Transactional
+    public GoalDTO updateAmount(Long goalId, BigDecimal amount) throws AccessDeniedException, IllegalAccessException {
+        Long userId = userService.getCurrentAuthUser().getId();
+        Goal goal = findAndVerifyGoal(goalId, userId);
+
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalAccessException("Invalid amount. The amount is too small.");
+        }
+
+        BigDecimal remaining = goal.getTargetAmount().subtract(goal.getCurrentAmount());
+
+        if (amount.compareTo(remaining) > 0) {
+            throw new IllegalAccessException("Invalid amount. The amount is too big.");
+        }
+        goal.setCurrentAmount(goal.getCurrentAmount().add(amount));
         return goalMapper.toDTO(goalRepository.save(goal));
     }
 

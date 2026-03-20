@@ -8,6 +8,8 @@ import org.mapstruct.Mapper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Mapper(componentModel = "spring")
 public interface GoalMapper {
@@ -18,15 +20,20 @@ public interface GoalMapper {
         dto.setId(goal.getId());
         dto.setTitle(goal.getTitle());
         dto.setDescription(goal.getDescription());
+        dto.setCurrency(goal.getCurrency());
         dto.setTargetAmount(goal.getTargetAmount());
         dto.setCurrentAmount(goal.getCurrentAmount());
         dto.setCategory(String.valueOf(goal.getCategory()));
-        dto.setPriority(goal.getIsPriority());
-        dto.setActive(goal.getIsActive());
+        dto.setIsPriority(goal.getIsPriority());
+        dto.setIsActive(goal.getIsActive());
+
+        if (goal.getCreatedAt() != null) {
+            dto.setCreatedAt(goal.getCreatedAt().toLocalDate());
+        }
 
         dto.setStatus(goal.getStatus().toString());
         dto.setProgress(getProgress(goal.getTargetAmount(), goal.getCurrentAmount()));
-        dto.setReached(goal.getCurrentAmount().compareTo(goal.getTargetAmount()) >= 0);
+        dto.setIsReached(goal.getCurrentAmount().compareTo(goal.getTargetAmount()) >= 0);
 
         return dto;
     }
@@ -45,6 +52,7 @@ public interface GoalMapper {
         Goal goal = new Goal();
         goal.setTitle(dto.getTitle());
         goal.setDescription(dto.getDescription());
+        goal.setCurrency(dto.getCurrency());
         goal.setTargetAmount((dto.getTargetAmount() != null) ? dto.getTargetAmount() : BigDecimal.ZERO);
         goal.setCurrentAmount((dto.getCurrentAmount() != null) ? dto.getCurrentAmount() : BigDecimal.ZERO);
 
@@ -58,6 +66,7 @@ public interface GoalMapper {
             goal.setCategory(GoalCategory.OTHERS);
         }
 
+        goal.setCreatedAt(LocalDateTime.now());
         goal.setUser(user);
         goal.setIsActive(active != null ? active : true);
         goal.setIsPriority(priority != null ? priority : false);

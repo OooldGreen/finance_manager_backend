@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.Formula;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,11 +24,17 @@ public class Goal extends BaseEntity{
     @Column
     private String description;
 
+    @Column(name = "currency")
+    private String currency = "EUR";
+
     @Column(name = "target_amount", nullable = false)
     private BigDecimal targetAmount;
 
     @Column(name = "current_amount")
     private BigDecimal currentAmount = BigDecimal.ZERO;
+
+    @Formula("current_amount >= target_amount")
+    private Boolean isReached;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -43,7 +50,7 @@ public class Goal extends BaseEntity{
     @Column(name = "is_active")
     private Boolean isActive;
 
-        @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
     private User user;
