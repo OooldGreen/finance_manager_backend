@@ -1,5 +1,6 @@
 package com.oooldgreen.financemanager.controller;
 
+import com.oooldgreen.financemanager.dto.TagDTO;
 import com.oooldgreen.financemanager.dto.TransactionDTO;
 import com.oooldgreen.financemanager.entity.Transaction;
 import com.oooldgreen.financemanager.entity.TransactionCategory;
@@ -29,7 +30,7 @@ public class TransactionController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<TransactionDTO> createTransaction(@RequestBody Transaction transaction) {
+    public ResponseEntity<TransactionDTO> createTransaction(@RequestBody TransactionDTO transaction) {
         TransactionDTO savedTransaction = transactionService.createTransaction(transaction);
         return ResponseEntity.ok(savedTransaction);
     }
@@ -64,23 +65,23 @@ public class TransactionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionDTO> getTransaction(@PathVariable Long id) throws AccessDeniedException {
+    public ResponseEntity<TransactionDTO> getTransaction(@PathVariable Long id) {
         return ResponseEntity.ok(transactionService.getTransaction(id));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<TransactionDTO> getTransaction(@PathVariable Long id, @RequestBody Transaction t) throws AccessDeniedException {
+    public ResponseEntity<TransactionDTO> getTransaction(@PathVariable Long id, @RequestBody TransactionDTO t) {
         return ResponseEntity.ok(transactionService.updateTransaction(id, t));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRecord(@PathVariable Long id) throws AccessDeniedException {
+    public ResponseEntity<?> deleteTransaction(@PathVariable Long id) throws AccessDeniedException {
         transactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/batch")
-    public ResponseEntity<?> deleteRecords(@RequestBody List<Long> ids) {
+    public ResponseEntity<?> deleteTransactions(@RequestBody List<Long> ids) {
         transactionService.deleteTransactions(ids);
         return ResponseEntity.noContent().build();
     }

@@ -6,6 +6,7 @@ import com.oooldgreen.financemanager.entity.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,9 +19,6 @@ import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
-    @Query("SELECT new com.oooldgreen.financemanager.dto.TransactionDTO(t.id, t.title, t.amount, t.description, t.ticketCompletionDate, t.transactionType, t.transactionCategory, t.transactionStatus,  a.id, a.name, u.username) " +
-            "FROM Transaction t JOIN t.account a JOIN t.user u WHERE u.id = :userId ")
-    List<Transaction> getAllTransactionsById(@Param("userId") Long userId);
 
     @Query("SELECT t from Transaction t WHERE YEAR(t.ticketCompletionDate) = :year AND MONTH(t.ticketCompletionDate) = :month AND t.user = :user")
     List<Transaction> getMonthlyTransactions(
@@ -48,4 +46,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("SELECT MIN(t.ticketCompletionDate) FROM Transaction t WHERE t.user.id = :userId AND t.transactionStatus = com.oooldgreen.financemanager.entity.TransactionStatus.COMPLETED")
     Optional<LocalDateTime > findFirstTransactionDate(Long userId);
+
+    // find tags by transaction id and user id
+    @EntityGraph(attributePaths = {"tags"})
+    Optional<Transaction> findByIdAndUserId(Long id, Long userId);
 }

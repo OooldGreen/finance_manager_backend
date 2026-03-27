@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,16 +27,19 @@ public class TransactionService {
     private final AccountRepository accountRepository;
     private final UserService userService;
     private final TransactionMapper transactionMapper;
+    private final TagService tagService;
 
     @Transactional
-    public TransactionDTO createTransaction(Transaction transaction) {
+    public TransactionDTO createTransaction(TransactionDTO dto) {
         User user = userService.getCurrentAuthUser();
+        Transaction transaction = transactionMapper.toEntity(dto);
         transaction.setUser(user);
 
-        Account account = accountRepository.findById(transaction.getAccount().getId()).orElseThrow(() -> new RuntimeException("Can't find account"));
-        BigDecimal amount = transaction.getAmount();
+        Account account = accountRepository.findById(dto.getAccountId()).orElseThrow(() -> new RuntimeException("Can't find account"));
+        BigDecimal amount = dto.getAmount();
         account.setBalance(account.getBalance().add(amount));
         accountRepository.save(account);
+        transaction.setAccount(account);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
         return transactionMapper.toDTO(savedTransaction);
@@ -71,12 +76,10 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionDTO getTransaction(Long transactionId) throws AccessDeniedException {
+    public TransactionDTO getTransaction(Long transactionId) {
         User user = userService.getCurrentAuthUser();
-        Transaction transaction = transactionRepository.findById(transactionId).orElseThrow(() -> new RuntimeException("Transaction not found"));
-        if (!transaction.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Access denied! You can not delete this record.");
-        }
+        Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
         return transactionMapper.toDTO(transaction);
     }
 
@@ -88,13 +91,18 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionDTO updateTransaction(Long transactionId, Transaction newT) throws AccessDeniedException {
+    public TransactionDTO updateTransaction(Long transactionId, TransactionDTO newT) {
         User user = userService.getCurrentAuthUser();
-        Transaction transaction = transactionRepository.findById(transactionId).orElseThrow(() -> new RuntimeException("Transaction not found"));
-        if (!transaction.getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Access denied! You can not modify this record.");
+        Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, user.getId()).orElseThrow(() -> new RuntimeException("Transaction not found"));
+        transactionMapper.updateTransaction(transactionMapper.toEntity(newT), transaction);
+
+        if (newT.getTagNames()!= null) {
+            Set <Tag> newTags = newT.getTagNames().stream()
+                    .map(tagService::getOrCreateTag)
+                    .collect(Collectors.toSet());
+            transaction.setTags(newTags);
         }
-        transactionMapper.updateTransaction(newT, transaction);
+
         Transaction updatedT = transactionRepository.save(transaction);
         return transactionMapper.toDTO(updatedT);
     }
@@ -102,7 +110,7 @@ public class TransactionService {
     @Transactional
     public void deleteTransaction(Long transactionId) throws AccessDeniedException {
         User user = userService.getCurrentAuthUser();
-        Transaction transaction = transactionRepository.findById(transactionId).orElseThrow(() -> new RuntimeException("Transaction not found"));
+        Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, user.getId()).orElseThrow(() -> new RuntimeException("Transaction not found"));
         if (!transaction.getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("Access denied! You can not delete this record.");
         }

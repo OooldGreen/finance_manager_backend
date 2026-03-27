@@ -1,5 +1,6 @@
 package com.oooldgreen.financemanager.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.oooldgreen.financemanager.entity.TransactionCategory;
 import com.oooldgreen.financemanager.entity.TransactionStatus;
 import com.oooldgreen.financemanager.entity.TransactionType;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -25,4 +28,10 @@ public class TransactionDTO {
     private Long accountId;
     private String accountName;
     private String username;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<String> tagNames;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Set<TagDTO> tags;
 }

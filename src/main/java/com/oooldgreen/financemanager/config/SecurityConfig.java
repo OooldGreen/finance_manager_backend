@@ -1,5 +1,6 @@
 package com.oooldgreen.financemanager.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,7 +12,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -24,6 +27,9 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthFilter jwtAuthFilter;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.security.remember-me.key:default_secret_key}")
+    private String rememberMeKey;
 
     public SecurityConfig(UserDetailsService userDetailsService, JwtAuthFilter jwtAuthFilter, PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
@@ -38,6 +44,7 @@ public class SecurityConfig {
      * 3. Allow all Preflight OPTION request
      * 4. Permit login, signup without token
      * 5. All other requests must be authenticated
+     * 6. remember me for 7 days
      * **/
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -59,9 +66,20 @@ public class SecurityConfig {
             // Set custom authentication provider
             .authenticationProvider(authenticationProvider())
             // Add JWT filter before Spring Security's default filter
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .rememberMe(rm -> rm
+                        .rememberMeServices(rememberMeServices())
+                );
 
         return http.build();
+    }
+
+    @Bean
+    public RememberMeServices rememberMeServices() {
+        TokenBasedRememberMeServices rememberMeServices = new TokenBasedRememberMeServices(rememberMeKey, userDetailsService);
+        rememberMeServices.setParameter("remember");
+        rememberMeServices.setTokenValiditySeconds(86400 * 7);
+        return rememberMeServices;
     }
 
     @Bean

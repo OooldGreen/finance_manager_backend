@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Mapper(componentModel = "spring")
 public interface GoalMapper {
     public default GoalDTO toDTO (Goal goal) {
-        if(goal == null) return null;
+        if (goal == null) return null;
 
         GoalDTO dto = new GoalDTO();
         dto.setId(goal.getId());
