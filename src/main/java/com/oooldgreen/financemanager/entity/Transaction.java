@@ -36,7 +36,7 @@ public class Transaction extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_category", length = 15)
-    private  TransactionCategory transactionCategory;
+    private TransactionCategory transactionCategory;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_status", length = 10)

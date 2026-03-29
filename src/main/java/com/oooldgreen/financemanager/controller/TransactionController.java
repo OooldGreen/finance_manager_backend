@@ -4,6 +4,7 @@ import com.oooldgreen.financemanager.dto.TagDTO;
 import com.oooldgreen.financemanager.dto.TransactionDTO;
 import com.oooldgreen.financemanager.entity.Transaction;
 import com.oooldgreen.financemanager.entity.TransactionCategory;
+import com.oooldgreen.financemanager.entity.TransactionSearchRequest;
 import com.oooldgreen.financemanager.service.TransactionService;
 import com.oooldgreen.financemanager.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -84,5 +85,10 @@ public class TransactionController {
     public ResponseEntity<?> deleteTransactions(@RequestBody List<Long> ids) {
         transactionService.deleteTransactions(ids);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<TransactionDTO>> searchTransactions(TransactionSearchRequest request) {
+        return ResponseEntity.ok(transactionService.searchTransactions(request));
     }
 }

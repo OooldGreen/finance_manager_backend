@@ -5,19 +5,20 @@ import com.oooldgreen.financemanager.entity.*;
 import com.oooldgreen.financemanager.mapper.TransactionMapper;
 import com.oooldgreen.financemanager.repository.AccountRepository;
 import com.oooldgreen.financemanager.repository.TransactionRepository;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -125,5 +126,70 @@ public class TransactionService {
     public void deleteTransactions(List<Long> ids) {
         Long userId = userService.getCurrentAuthUser().getId();
         transactionRepository.deleteTransactions(ids, userId);
+    }
+
+    @Transactional
+    public Page<TransactionDTO> searchTransactions(TransactionSearchRequest request) {
+        User user = userService.getCurrentAuthUser();
+        Specification<Transaction> spec = ((root, query, criteriaBuilder) -> {
+            // root: 代表查询的实体（Transaction），可以用 root.get("fieldName") 获取属性
+            // query: 定义查询结构（如 DISTINCT）
+            // cb (CriteriaBuilder): 构建具体的判断条件（如 equal, like, between）
+            List<Predicate> predicates = new ArrayList<>();
+
+            // 1. keyword 模糊搜索
+            if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
+                String pattern = "%" + request.getKeyword() + "%";
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(root.get("title"), pattern),
+                        criteriaBuilder.like(root.get("description"), pattern)
+                ));
+            }
+
+            // 2. date
+            if (request.getStartDate() != null && request.getEndDate() != null) {
+                predicates.add(criteriaBuilder.between(root.get("ticketCompletionDate"), request.getStartDateTime(), request.getEndDateTime()));
+            }
+
+            // 3. income / expense
+            if (request.getType() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("transactionType"), request.getEnumType()));
+            }
+
+            // 4. status
+            if (request.getStatus() != null && !request.getStatus().isEmpty()) {
+                predicates.add(root.get("transactionStatus").in(request.getEnumStatus()));
+            }
+
+            // 5. categories
+            if (request.getCategories() != null && !request.getCategories().isEmpty()) {
+                predicates.add(root.get("transactionCategory").in(request.getEnumCategories()));
+            }
+
+            // 6. accounts
+            List<Long> accountIds = request.getAccountIds();
+            if (accountIds != null && !accountIds.isEmpty()) {
+                predicates.add(root.get("account").in(accountIds));
+            }
+
+            // 7. tags
+            List<Long> tagIds = request.getTagIds();
+            if (tagIds != null && !tagIds.isEmpty()) {
+                predicates.add(root.get("tags").in(tagIds));
+            }
+
+            // security check
+            predicates.add(criteriaBuilder.equal(root.get("user"), user));
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        });
+
+        Sort sort = request.getSortDirection().equalsIgnoreCase("DESC")
+                ? Sort.by(request.getSortKey()).descending()
+                : Sort.by(request.getSortKey()).ascending();
+
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
+        Page<Transaction> res = transactionRepository.findAll(spec, pageable);
+        return res.map(transactionMapper::toDTO);
     }
 }
